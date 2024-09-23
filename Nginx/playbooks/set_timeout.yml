@@ -1,0 +1,66 @@
+- name: Check if file contains a specific value
+  hosts: <hosts> # Change this 
+  become: yes
+  tasks:
+    - name: "Check read timeout"
+      shell: "grep -q 'client_body_timeout' /etc/nginx/nginx.conf"
+      register: 'client_body_timeout'
+      ignore_errors: yes
+
+    - name: "Add proxy read timeout"
+      ansible.builtin.lineinfile:
+       path: /etc/nginx/nginx.conf
+       insertafter: '^http\s*{'
+       line: |
+         client_body_timeout {{nginx_timeout}};
+      when: client_body_timeout.rc == 1
+
+    - name: "Change read proxy timeout"
+      ansible.builtin.replace:
+        path: /etc/nginx/nginx.conf
+        regexp: 'client_body_timeout\s+\w+'
+        replace: client_body_timeout {{nginx_timeout}}
+      when: client_body_timeout.rc == 0
+
+    - name: "Check client_header_timeout"
+      shell: "grep -q 'client_header_timeout' /etc/nginx/nginx.conf"
+      register: 'client_header_timeout'
+      ignore_errors: yes
+
+    - name: "Add proxy read timeout"
+      ansible.builtin.lineinfile:
+       path: /etc/nginx/nginx.conf
+       insertafter: '^http\s*{'
+       line: |
+         client_header_timeout {{nginx_timeout}};
+      when: client_header_timeout.rc == 1
+
+    - name: "Change read proxy timeout"
+      ansible.builtin.replace:
+        path: /etc/nginx/nginx.conf
+        regexp: 'client_header_timeout\s+\w+'
+        replace: client_header_timeout {{nginx_timeout}}
+      when: client_header_timeout.rc == 0
+
+    - name: "Check proxy_send_timeout"
+      shell: "grep -q 'keepalive_timeout' /etc/nginx/nginx.conf"
+      register: 'keepalive_timeout'
+      ignore_errors: yes
+
+    - name: "Add keepalive_timeout"
+      ansible.builtin.lineinfile:
+       path: /etc/nginx/nginx.conf
+       insertafter: '^http\s*{'
+       line: |
+         keepalive_timeout {{nginx_timeout}};
+      when: keepalive_timeout.rc == 1
+
+    - name: "Change read proxy timeout"
+      ansible.builtin.replace:
+        path: /etc/nginx/nginx.conf
+        regexp: 'keepalive_timeout\s+\w+'
+        replace: keepalive_timeout {{nginx_timeout}}
+      when: keepalive_timeout.rc == 0
+    
+    - name: restart nginx
+      service: name=nginx state=restarted enabled=yes

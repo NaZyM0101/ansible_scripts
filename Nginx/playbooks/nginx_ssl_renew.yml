@@ -1,0 +1,19 @@
+---
+- name: Configure Nginx rate limiting
+  hosts: <host>  #Change this
+  become: true
+  tasks:
+    - name: Upload cert to server  
+      copy:
+        src: /path/to/cert # Your ssl cert filepath to upload(Change this)
+        dest: /dest/path/ # Change this
+        backup: yes
+    - name: Upload privkey to server  
+      copy:
+        src: /path/to/key # Your ssl keys path (Change this)
+        dest: /dest/path # Change this
+        backup: yes
+    - name: Restart Nginx server
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

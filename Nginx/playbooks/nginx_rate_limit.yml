@@ -1,0 +1,25 @@
+---
+- name: Configure Nginx rate limiting
+  hosts: your_nginx_servers
+  become: true
+  tasks:
+    - name: Backup Current config 
+      shell: cp /etc/nginx/nginx.conf /home/nazym/ && cp /etc/nginx/apps/app.conf /home/nazym/
+    - name: Upload nginx.conf
+      ansible.builtin.copy:
+        src: /home/cybercrow/Documents/Projects/scripts_mekdep/nginx.conf
+        dest: /etc/nginx/ 
+        mode: 0644  
+        owner: root
+        group: root
+    - name: Upload app.conf file
+      ansible.builtin.copy:
+        src: /home/cybercrow/Documents/Projects/scripts_mekdep/app.conf
+        dest: /etc/nginx/apps/app.conf
+        mode: 0644  
+        owner: root
+        group: root
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

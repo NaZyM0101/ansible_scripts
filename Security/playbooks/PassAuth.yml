@@ -1,0 +1,19 @@
+- name: Ssh Password Authentication disable
+  hosts: <host> # Change this
+  become: yes
+  tasks:
+    - name: Disable ssh pass Authentication
+      ansible.builtin.replace:
+        path: /etc/ssh/sshd_config
+        regexp: 'PasswordAuthentication\s+yes'
+        replace: 'PasswordAuthentication no'
+    - name: Disable ssh pass Authentication
+      ansible.builtin.replace:
+        path: /etc/ssh/sshd_config
+        regexp: '#PasswordAuthentication'
+        replace: 'PasswordAuthentication'
+    - name: Resstart ssh service 
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+

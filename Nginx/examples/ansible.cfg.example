@@ -1,0 +1,8 @@
+#<inventory> -  filename  to ansible get inventories
+#<private_key_path> - ssh privkey path 
+#<user>:<port> -  username and remote servers port for ssh login
+[defaults]
+inventory = <inventory>
+private_key_file = <private_key_path>
+remote_user = <user>
+remote_port = <port>

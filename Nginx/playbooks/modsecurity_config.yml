@@ -1,0 +1,32 @@
+#<username> - user that you logged in
+#<host> - host group that you want to run script on
+#<local/path>:<remote/path> - upload file from local/path to remote/path
+#<owner> - username to change owner with chown
+---
+- name: Run modsecurity.sh script with sudo
+  hosts: <host>
+  become: yes
+  become_user: root
+  tasks:
+    - name: Upload local file to remote server
+      copy:
+        src: <local/path>
+        dest: <remote/path>
+        owner: <owner>
+        mode:  '0755'
+    - name: Delete the /usr/local/coreruleset-4.0.0 directory
+      file:
+        path: /usr/local/coreruleset-4.0.0
+        state: absent
+    - name: Delete the /usr/local/coreruleset-4.0.0 directory
+      file:
+        path: /etc/nginx/modsec
+        state: absent
+    - name: Ensure the script is executable
+      file:
+        path: /home/<username>/modsecurity.sh
+        mode: '0755'
+        state: file
+
+    - name: Run the modsecurity.sh script with sudo
+      command: bash /home/<username>/modsecurity.sh

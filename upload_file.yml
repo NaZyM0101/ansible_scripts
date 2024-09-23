@@ -1,0 +1,11 @@
+---
+- name: Upload a local file to the remote server
+  hosts: <host>
+  become: yes
+  tasks:
+    - name: Upload local file to remote server
+      copy:
+        src: <local/path>
+        dest: <remote/path>
+        owner: <user>
+        mode:  '0755'
