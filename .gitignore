@@ -1,3 +1,5 @@
 *.pem
 inventory.yml
 ansible.cfg
+*.pub
+*.priv

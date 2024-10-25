@@ -1,0 +1,47 @@
+---
+- name: Compare Host RAM and CPU Specifications with Expected Values
+  hosts: all
+  become: no
+  vars:
+    expected_specs: "{{ lookup('file', '../files&folders/hardware.yml') | from_yaml }}"
+
+  tasks:
+    - block:
+        - name: Get RAM info
+          shell: free -g | awk '/^Mem:/{print $2}'
+          register: ram_info 
+
+        - name: Set RAM info 
+          ansible.builtin.set_fact:
+            actual_ram: "{{ ram_info.stdout | trim | int }}"
+        
+        - name: Ensure expected RAM is integer
+          ansible.builtin.set_fact:
+            expected_ram: "{{ expected_specs[inventory_hostname].ram | int }}"
+
+        - name: Debug RAM values
+          debug:
+            msg:
+              - "Actual RAM: {{ actual_ram }} GB"
+              - "Expected RAM: {{ expected_ram }} GB"
+      tags: check_ram
+
+    - block:
+        - name: Get CPU info
+          command: nproc
+          register: cpu_info
+        
+        - name: Set CPU info
+          ansible.builtin.set_fact:
+            actual_cpu: "{{ cpu_info.stdout | int }}"
+          
+        - name: Ensure expected CPU is integer
+          ansible.builtin.set_fact:
+            expected_cpu: "{{ expected_specs[inventory_hostname].cpu | int }}"
+
+        - name: Debug CPU values
+          debug:
+            msg:
+              - "Actual CPU: {{ actual_cpu }} cores"
+              - "Expected CPU: {{ expected_cpu }} cores"
+      tags: check_cpu

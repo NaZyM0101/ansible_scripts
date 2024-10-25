@@ -1,0 +1,38 @@
+- name: Iptables Settings
+  hosts: all
+  become: yes
+  tasks:
+    - block:
+      - name: Add iptables rule
+        ansible.builtin.iptables:
+          chain: INPUT
+          protocol: tcp
+          source:  93.171.220.0/22
+          destination_port: 443
+          jump: ACCEPT
+          action: insert
+          rule_num: 1
+
+      - name: Save iptables rules to /etc/iptables/rules.v4
+        command: /usr/sbin/iptables-save > /etc/iptables/rules.v4
+        changed_when: false       
+      tags: "insertrule"
+    
+    - block:
+      - name: Copy rules.v4 file to destination
+        copy:
+          src: ./files_folders/rules.v4
+          dest: /etc/iptables/rules.v4
+          owner: root
+          group: root
+          mode: '0644'
+
+      - name: Replace -d IP with the current inventory host IP      
+        replace:
+          path: /etc/iptables/rules.v4
+          regexp: '-d\s+\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+          replace: "-d {{ ansible_host }}"
+
+      - name: Apply iptables rules
+        command: iptables-restore < /etc/iptables/rules.v4
+      tags: "rule_conf"

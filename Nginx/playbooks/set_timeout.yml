@@ -1,4 +1,4 @@
-- name: Check if file contains a specific value
+- name: Nginx Set Timeout
   hosts: <hosts> # Change this 
   become: yes
   tasks:

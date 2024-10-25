@@ -1,0 +1,24 @@
+---
+- name: Get RAM usage info
+  hosts: all
+  #become: yes
+  tasks:
+    - block:
+      - name: "Get Ram usage"
+        command: free -h
+        register: ram_info
+    
+      - name: Show Ram info
+        ansible.builtin.debug:
+          msg: "{{ram_info}}"
+      tags: ram_usage
+
+    - block:
+      - name: Get Cpu info
+        command: vmstat
+        register: cpu_info
+
+      - name: Show cpu info
+        ansible.builtin.debug:
+          msg: "{{cpu_info}}"
+      tags: cpu_usage
