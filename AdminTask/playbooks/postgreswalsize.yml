@@ -1,0 +1,47 @@
+---
+- name: Ensure max_wal_size is set correctly in postgres.conf
+  hosts: db
+  become: yes  # Use sudo to modify the postgres.conf file
+  vars_files:
+   - "../vars/postgres.yml"
+  tasks:
+    - name: Get PostgreSQL version
+      command: psql --version
+      register: pg_version
+
+    - name: Postgresql Major version
+      set_fact:
+        pg_major_version: "{{ pg_version.stdout.split()[2].split('.')[0] }}"
+
+    - name: Set postgres.conf path based on major version
+      set_fact:
+        pg_conf_path: "/etc/postgresql/{{ pg_major_version }}/main/postgresql.conf"
+
+    - name: Debug PostgreSQL configuration path
+      debug:
+        msg: "PostgreSQL configuration path is {{ pg_conf_path }}"
+
+    - name: Check if max_wal_size is present
+      command: grep '^max_wal_size =' "{{ pg_conf_path }}"
+      register: wal_size_check
+      ignore_errors: yes
+
+    - name: Update max_wal_size if present
+      lineinfile:
+        path: "{{ pg_conf_path }}"
+        regexp: '^max_wal_size ='
+        line: 'max_wal_size = {{wal_size}}'  # Change to your desired value
+      when: wal_size_check.rc == 0  # If max_wal_size is found
+
+    - name: Add max_wal_size at the top if not present
+      lineinfile:
+        path: "{{ pg_conf_path }}"
+        line: 'max_wal_size = {{wal_size}}'  # Add this line if max_wal_size is not present
+        state: present
+        insertafter: BOF  # Insert at the top of the file
+      when: wal_size_check.rc != 0  # If grep did not find the line
+    
+    - name: Restart Postgresql Service
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
